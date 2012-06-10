@@ -7,6 +7,9 @@ understanding of the XA semantics.
 	JTA has the reputation of being hard to use and understand. This isn't true. There are a few new things you need to know but 
 in general this information adds on top of your current JDBC or JMS experience. Let's see what JTA hello, world! using BTM looks like. 
 Here is a complete application's code that inserts a row in a h2 database using a JTA transaction and reads it back in another transaction:
+~~~
+com.kylin.btm.HelloWorld
+~~~
 
 
 
