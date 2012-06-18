@@ -1,0 +1,148 @@
+<?xml version="1.0"?>  
+  
+<project name="jboss" default="deploy" basedir="..">  
+  
+	<property name="app.dir" value="${basedir}/jboss" />  
+	<property name="src.dir" value="${app.dir}/src" />
+	<property name="conf.dir" value="${app.dir}/conf" /> 
+	<property name="web.dir" value="${app.dir}/web" />
+	
+	<property file="${app.dir}/build.properties"/>
+	
+	<property name="build.dir" value="${build.home}/${build.dist}" />  
+	<property name="build.classes.dir" value="${build.dir}/classes" />
+	
+	<property name="jboss.client" value="${jboss.home}/client" />
+    <property name="jboss.server" value="${jboss.home}/server/${jboss.profile}/deploy" /> 
+	
+	<property name="cluster.node1.server" value="${jboss.home}/server/${cluster.node1}/deploy" /> 
+	<property name="cluster.node2.server" value="${jboss.home}/server/${cluster.node2}/deploy" /> 
+	
+    <path id="build.classpath"> 
+    	<fileset dir="${jboss.client}">  
+    		<include name="*.jar" />            
+    	</fileset>
+    	<fileset dir="${repo.dir}">  
+    		<include name="*.jar" />            
+    	</fileset>  
+        <pathelement location="${build.classes.dir}" />  
+    </path>
+	
+	<target name="validateproperties" >  
+		
+		<echo>Check the following parameter is been setting correctly</echo>
+		
+		<echo>repo.dir: ${repo.dir}</echo>
+		<echo>build.home: ${build.home}</echo>
+		<echo>jboss.home: ${jboss.home}</echo>
+		<echo>jboss.profile: ${jboss.profile}</echo>
+
+		<echo>app.dir: ${app.dir}</echo>	 
+		<echo>src.dir: ${src.dir}</echo>
+		
+		<echo>build.dir: ${build.dir}</echo>
+		<echo>build.classes.dir: ${build.classes.dir}</echo>
+			
+		<echo>jboss.client: ${jboss.client}</echo>
+		<echo>jboss.server: ${jboss.server}</echo>	
+	</target> 
+	
+	<target name="clean" depends="validateproperties">  
+        <delete dir="${build.dir}" />  
+	</target>
+	
+	<target name="prepare" depends="clean">  
+		<mkdir dir="${build.dir}" />  
+	    <mkdir dir="${build.classes.dir}" />  
+	</target> 
+	
+	<target name="compile" depends="prepare" description="compile">  
+		<javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="on" deprecation="on" optimize="off" includes="com/**">  
+	    	<classpath refid="build.classpath" />  
+	    </javac>  
+	</target> 
+	
+	<target name="jar" depends="compile" description="generate all jars">  
+		
+		<jar jarfile="${build.dir}/demo.jta-${version}.jar">  
+	    	<fileset dir="${build.classes.dir}">  
+	        	<include name="com/kylin/jboss/jta/ejb/*.class" /> 
+	    	</fileset> 
+		</jar>
+
+	</target>
+	
+	<!-- Deploy & Undeploy Targets -->
+	<target name="deployEJB" depends="jar">  
+		<copy file="${build.dir}/demo.jta-${version}.jar" todir="${jboss.server}"/>				
+	</target> 
+	<target name="unDeployEJB" >  
+		<delete file="${jboss.server}/demo.jta-${version}.jar" />
+	</target>
+	
+	
+	<!-- End -->
+	
+	
+	<target name="war" depends="jar" description="generate all wars"> 
+		
+		<copy todir="${build.dir}/demo.war-${version}" >  
+			<fileset dir="${web.dir}" includes="**"/>  
+		</copy>
+		
+		<copy file="${build.dir}/demo.servlet-${version}.jar" todir="${build.dir}/demo.war-${version}/WEB-INF/lib"/>
+		
+		<war destfile="${build.dir}/demo-${version}.war" webxml="${build.dir}/demo.war-${version}/WEB-INF/web.xml">
+			<fileset dir="${build.dir}/demo.war-${version}"/>
+		</war>
+	</target>
+	
+	<target name="ear" depends="war" description="generate all ears">
+		
+		<copy todir="${build.dir}/demo.ear-${version}" >  
+			<fileset dir="${build.dir}" includes="demo-${version}.war"/>
+			<fileset dir="${conf.dir}/demo.ear" includes="**"/>
+		</copy>
+		
+		<delete file="${build.dir}/demo.ear-${version}/META-INF/application.xml" />	
+		
+		<ear destfile="${build.dir}/demo-${version}.ear" appxml="${conf.dir}/demo.ear/META-INF/application.xml">
+			<fileset dir="${build.dir}/demo.ear-${version}"/>
+		</ear>
+		
+	</target>	
+	
+	
+
+	
+	<target name="deployWar" depends="war">  
+			<copy file="${build.dir}/demo-${version}.war" todir="${jboss.server}"/>
+						
+	</target> 
+	<target name="unDeployWar" >  
+		<delete file="${jboss.server}/demo-${version}.war" />
+	</target>
+	
+	<target name="deploy" depends="ear">  
+		<copy file="${build.dir}/demo-${version}.ear" todir="${jboss.server}"/>		
+	</target> 
+	
+	<target name="unDeploy" >  
+		<delete file="${jboss.server}/demo-${version}.ear" />
+	</target>
+	
+	<target name="deployCluster" depends="ear">  
+		<copy file="${build.dir}/demo-${version}.ear" todir="${cluster.node1.server}"/>	
+		<copy file="${conf.dir}/jboss-log4j.xml" todir="${cluster.node1.server}/../conf"/>
+		
+		<copy file="${build.dir}/demo-${version}.ear" todir="${cluster.node2.server}"/>	
+		<copy file="${conf.dir}/jboss-log4j.xml" todir="${cluster.node2.server}/../conf"/>
+			
+	</target> 
+		
+	<target name="unDeployCluster" >  
+		<delete file="${cluster.node1.server}/demo-${version}.ear" />
+		<delete file="${cluster.node2.server}/demo-${version}.ear" />
+	</target>
+  
+</project>    

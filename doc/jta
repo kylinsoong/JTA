@@ -11,17 +11,31 @@ Here is a complete application's code that inserts a row in a h2 database using 
 com.kylin.btm.HelloWorld
 ~~~
 
-
-
-
-
-
-
-
-
 -----------------------------------------------------------------------------------------------------------------------------------------------
-
+II - JTA
 -----------------------------------------------------------------------------------------------------------------------------------------------
+1. Distributed transaction services typically involve a number of participants:
+	1) Application Server: Provides the infrastructure required to support an application run-time environment which 
+	   includes transaction state management, such as an EJB server.
+	2) Transaction Manager: Provides the services and management functions required to support transaction demarcation,
+	   transactional resource management, synchronization, and transaction context propagation.
+	3) Resource Adapter: A Resource Adapter is used by an application server or client to connect to a Resource Manager. 
+	   JDBC drivers which are used to connect to relational databases are examples of Resource Adapters.
+	4) Resource Manager: Through a Resource Adapter, provides the application with access to resources. The resource manager 
+	   participates in distributed transactions by implementing a transaction resource interface. The transaction manager uses 
+	   this interface to communicate transaction association, transaction completion, and recovery.
+	5) Communication Resource Manager (CRM): Supports transaction context propagation and access to the transaction service 
+	   for incoming and outgoing requests.
+
+2. The JBoss JTA Implementation
+	All of the JTA classes and interfaces are declared within the javax.transaction package, and the corresponding JBossJTA 
+implementations are defined within the com.arjuna.ats.jta package.
+
+
+
+ 
+
+
 
 
 
