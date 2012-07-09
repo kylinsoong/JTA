@@ -22,6 +22,7 @@ public class JTATestSession implements JTATestService {
 		TransactionManager utm = (TransactionManager) ic.lookup("java:/TransactionManager");
 		
 		System.out.println(utm.getTransaction());
+		System.out.println(utm.getClass());
 
 		logger.info("TransactionManager Test End");
 	}

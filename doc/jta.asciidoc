@@ -35,6 +35,130 @@ All of the JTA classes and interfaces are declared within the javax.transaction 
 IMPORTANT: Each Xid that JBoss Transaction Service creates needs a unique node identifier encoded within it. JBoss Transaction Service will only recover transactions and states that match a specified node identifier. The node identifier should be provided to JBoss transaction Service via the
 'com.arjuna.ats.arjuna.xa.nodeIdentifier' property. You must ensure this value is unique across your JBoss Transaction Service instances. If you do not provide a value, JBoss Transaction Service will generate one and report the value via the logging infrastructure. The node identifier should be alphanumeric.
 
+1. UserTransaction
+++++++++++++++++++
+
+The UserTransaction interface allows applications to control transaction boundaries. It provides methods for beginning, committing, and rolling back top-level transactions. Nested transactions are not supported, and the begin method throws the NotSupportedException when the calling thread
+is already associated with a transaction. UserTransaction automatically associates newly created transactions with the invoking thread.
+
+NOTE: we can get the UserTransaction through JNDI, test demo can be found: 'com.kylin.jboss.jta.UserTransactionTest'
+
+2. TransactionManager
++++++++++++++++++++++
+
+The TransactionManager interface allows the application server to control transaction boundaries on behalf of the application being managed.
+
+NOTE: we can get the TransactionManager through JNDI, test demo can be found: 'com.kylin.jboss.jta.ejb.JTATestService'
+
+* The Transaction Manager maintains the transaction context association with threads as part of its internal data structure. A thread’s transaction context is either null or it refers to a specific global transaction. Multiple threads can be associated with the same global transaction. Nested transactions are not supported.
+
+* Each transaction context is encapsulated within a Transaction object, which can be used to perform operations which are specific to the target transaction, regardless of the calling thread’s transaction context.
+
+* The begin method of TransactionManager begins a new top-level transaction, and associates the transaction context with the calling thread. If the calling thread is already associated with a transaction then the begin method throws the *NotSupportedException*.
+
+* The getTransaction method returns the Transaction object that represents the transaction context currently associated with the calling thread. This object can be used to perform various operations on the target transaction. These operations are described elsewhere.
+
+* The commit method completes the transaction currently associated with the calling thread. After it returns, the calling thread is not associated with any transaction. If commit is called when the thread is not associated with any transaction context, an exception is thrown. In some
+implementations, only the transaction originator can use the commit operation. If the calling thread is not permitted to commit the transaction, an exception is thrown. JBossJTA does not impose any restrictions on the ability of threads to terminate transactions.
+
+* The rollback method is used to roll back the transaction associated with the current thread. After the rollback method completes, the thread is not associated with any transaction.
+
+NOTE: In a multi-threaded environment, multiple threads may be active within the same transaction. If checked transaction semantics have been disabled, or the transaction times out, then a transaction can be terminated by a thread other than its creator. If this happens, the creator must
+be notified. JBoss Transaction Service does this notification during commit or rollback by throwing the IllegalStateException exception.
+
+3. Suspending and Resuming a Transaction
++++++++++++++++++++++++++++++++++++++++++
+* The JTA supports the concept of a thread temporarily suspending and resuming transactions to enable it to perform non-transactional work. The suspend method is called to temporarily suspend the current transaction associated with the calling thread. If the thread is not associated with any
+transaction, a null object reference is returned; otherwise, a valid Transaction object is returned. The Transaction object can later be passed to the resume method to reinstate the transaction context.
+
+* The resume method associates the specified transaction context with the calling thread. If the transaction specified is valid, the transaction context is associated with the calling thread. Otherwise, the thread is not associated with any transaction.
+
+NOTE: If the resume method is invoked when the calling thread is already associated with another transaction, the Transaction Manager throws the *IllegalStateException* exception.
+
+----
+Transaction tobj = TransactionManager.suspend();
+..
+TransactionManager.resume(tobj);
+----
+
+NOTE: JBossJTA supports allowing a suspended transaction to be resumed by a different thread, even though this feature is not required by the JTA standards.
+
+* When a transaction is suspended, the application server de-registers and frees up the resources that are related to the suspended transaction. When a resource is de-listed, the Transaction Manager informs the resource manager and the resource manager disassociates the transaction from the
+specified resource object. When the application’s transaction context is resumed, the application server must give the transaction back its resources. Enlisting a resource as a result of resuming a transaction triggers the Transaction Manager to inform the resource manager to re-associate the resource object with the resumed transaction.
+
+4. The Transaction Interface
+++++++++++++++++++++++++++++
+
+The Transaction interface allows operations to be performed on the transaction associated with the target object. Every top-level transaction is associated with one Transaction object when the transaction is created. The Transaction object can be used to:
+
+* Enlist the transactional resources in use by the application.
+
+* Register for transaction synchronization call backs.
+
+* Commit or rollback the transaction.
+
+* Obtain the status of the transaction.
+
+
+The commit and rollback methods allow the target object to be committed or rolled back. The calling thread is not required to have the same transaction associated with the thread. If the calling thread is not allowed to commit the transaction, the transaction manager throws an exception.
+JBossJTA does not impose restrictions on threads terminating transactions.
+
+
+5. Resource Enlistment
+++++++++++++++++++++++
+
+* Transactional resources, such as database connections, are typically managed by the application server in conjunction with some resource adapter, and optionally, with connection pooling optimization. In order for an external transaction manager to coordinate transactional work performed by the
+resource managers, the application server must enlist and de-list the resources used in the transaction. These resources (participants) are enlisted with the transaction so that they can be informed when the transaction terminates.
+
+* As stated previously, the JTA is much more closely integrated with the XA concept of resources than the arbitrary objects. For each resource in use by the application, the application server invokes the enlistResource method with an *XAResource* object which identifies the resource in use. See for details on how the implementation of the *XAResource* can affect recovery in the event of a failure.
+
+* The enlistment request causes the transaction manager to inform the resource manager to start associating the transaction with the work performed through the corresponding resource. The transaction manager is responsible for passing the appropriate flag in its XAResource.start method call to the resource manager.
+
+* The delistResource method is used to dissociate the specified resource from the transaction context in the target object. The application server invokes the method with two parameters:
+** An *XAResources* object, which represents the resource.
+** A flag to indicate whether the operation is due to the transaction being suspended (TMSUSPEND), a portion of the work has failed (TMFAIL), or a normal resource release by the application(TMSUCCESS).
+
+* The de-list request causes the transaction manager to inform the resource manager to end the association of the transaction with the target XAResource. The flag value allows the application server to indicate whether it intends to come back to the same resource, in which case the resource states must be kept intact. The transaction manager passes the appropriate flag value in its XAResource.end method call to the underlying resource manager.
+
+6. Transaction Synchronization
++++++++++++++++++++++++++++++++
+
+Transaction synchronization allows the application server to be notified before and after the transaction completes. For each transaction started, the application server may optionally register a *Synchronization* callback object to be invoked by the transaction manager either before or after
+completion:
+
+* The 'beforeCompletion' method is called prior to the start of the two-phase transaction complete process. This call is executed in the same transaction context of the caller who initiates the TransactionManager.commit, or with no transaction context if Transaction.commit is used.
+
+* The afterCompletion method is called after the transaction has completed. The status of the transaction is supplied in the parameter. This method is executed without a transaction context.
+
+
+7. Transaction Equality
++++++++++++++++++++++++
+The transaction manager implements the Transaction object’s equals method to allow comparison between the target object and another Transaction object. The equals method returns true if the target object and the parameter object both refer to the same global transaction.
+----
+Transaction txObj = TransactionManager.getTransaction();
+Transaction someOtherTxObj = ..
+..
+boolean isSame = txObj.equals(someOtherTxObj);
+----
+
+The Resource Manager
+^^^^^^^^^^^^^^^^^^^^
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
