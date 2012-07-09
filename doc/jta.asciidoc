@@ -1,0 +1,61 @@
+
+I - BTM
+-------
+* The Bitronix Transaction Manager (BTM) is a simple but complete implementation of the JTA 1.1 API. It is a fully working XA transaction manager that provides all services required by the JTA API while trying to keep the code as simple as possible for easier understanding of the XA semantics.
+
+* JTA has the reputation of being hard to use and understand. This isn't true. There are a few new things you need to know but in general this information adds on top of your current JDBC or JMS experience. Let's see what JTA hello, world! using BTM looks like. Here is a complete application's code that inserts a row in a h2 database using a JTA transaction and reads it back in another transaction:
+----
+com.kylin.btm.HelloWorld
+----
+
+
+II - JTA
+--------
+
+Distributed transaction services typically involve a number of participants:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* *Application Server:* Provides the infrastructure required to support an application run-time environment which includes transaction state management, such as an EJB server.
+* *Transaction Manager:* Provides the services and management functions required to support transaction demarcation, transactional resource management, synchronization, and transaction context propagation.
+* *Resource Adapter:* A Resource Adapter is used by an application server or client to connect to a Resource Manager. JDBC drivers which are used to connect to relational databases are examples of Resource Adapters.
+* *Resource Manager:* Through a Resource Adapter, provides the application with access to resources. The resource manager participates in distributed transactions by implementing a transaction resource interface. The transaction manager uses this interface to communicate transaction association, transaction completion, and recovery.
+* *Communication Resource Manager (CRM):* Supports transaction context propagation and access to the transaction service for incoming and outgoing requests.
+
+The JBoss JTA Implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Java Transaction API (JTA) consists of three elements:
+
+* A high-level application transaction demarcation interface
+* A high-level transaction manager interface intended for application server
+* A standard Java mapping of the X/Open XA protocol intended for transactional resource manager
+
+All of the JTA classes and interfaces are declared within the javax.transaction package, and the corresponding JBossJTA implementations are defined within the com.arjuna.ats.jta package.
+
+IMPORTANT: Each Xid that JBoss Transaction Service creates needs a unique node identifier encoded within it. JBoss Transaction Service will only recover transactions and states that match a specified node identifier. The node identifier should be provided to JBoss transaction Service via the
+'com.arjuna.ats.arjuna.xa.nodeIdentifier' property. You must ensure this value is unique across your JBoss Transaction Service instances. If you do not provide a value, JBoss Transaction Service will generate one and report the value via the logging infrastructure. The node identifier should be alphanumeric.
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
