@@ -29,19 +29,13 @@
  * have any questions.
  */
 
-package com.kylin.btm;
-
-import org.h2.tools.Server;
-
-import com.kylin.btm.h2.H2Helper;
+package com.kylin.jta;
 
 /**
- * Hello world!
+ * Unit test for simple App.
  */
-public class App {
-	public static void main(String[] args) {
-		Server server = H2Helper.startH2Server();
+public class AppTest  {
 
-//		H2Helper.stopH2Server(server);
-	}
+  public void testApp() {
+  }
 }
