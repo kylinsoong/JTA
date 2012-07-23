@@ -1,8 +1,0 @@
-package com.kylin.jboss.jta.ejb;
-
-public interface JTATestService {
-
-	public abstract Object testTransactionManager() throws Exception;
-	
-	public abstract void testUserTransaction() throws Exception;
-}
