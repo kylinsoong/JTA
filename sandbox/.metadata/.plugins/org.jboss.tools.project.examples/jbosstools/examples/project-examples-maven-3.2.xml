@@ -1,0 +1,76 @@
+<projects>
+	
+	<project>
+		<category>Weld 1.0.1 for JBoss Application Server 6.0</category>
+		<name>weld-jsf-login</name>
+		<included-projects>weld-jsf-login</included-projects>
+		<shortDescription>Weld JSF login example</shortDescription>
+		<description>
+The example demonstrates user login/logout for an application that uses JSF.
+It will create the weld-jsf-login project in your workspace.
+		</description>
+		<size>8192</size>
+		<url>http://anonsvn.jboss.org/repos/jbosstools/workspace/snjeza/weld-examples/weld-jsf-login-1.0.1.zip</url>
+		<fixes>
+			<fix type="wtpruntime">
+				<property name="allowed-types">org.jboss.ide.eclipse.as.runtime.60</property>
+				<property name="description">This project example requires JBoss Application Server 6.0</property>
+			</fix>
+		</fixes>
+		<importType>maven</importType>
+		<importTypeDescription>The project example requires the m2eclipse-core, m2eclipse-wtp and JBoss Maven Project Examples feature.</importTypeDescription> 
+	</project>
+	
+	<project>
+		<category>Weld 1.1.0 for JBoss Application Server 6.0</category>
+		<name>weld-jsf-l<projects>
+	
+	<project>
+		<category>Weld 1.0.1 for JBoss Application Server 6.0</category>
+		<name>weld-jsf-login</name>
+		<included-projects>weld-jsf-login</included-projects>
+		<shortDescription>Weld JSF login example</shortDescription>
+		<description>
+The example demonstrates user login/logout for an application that uses JSF.
+It will create the weld-jsf-login project in your workspace.
+		</description>
+		<size>8192</size>
+		<url>http://anonsvn.jboss.org/repos/jbosstools/workspace/snjeza/weld-examples/weld-jsf-login-1.0.1.zip</url>
+		<fixes>
+			<fix type="wtpruntime">
+				<property name="allowed-types">org.jboss.ide.eclipse.as.runtime.60</property>
+				<property name="description">This project example requires JBoss Application Server 6.0</property>
+			</fix>
+		</fixes>
+		<importType>maven</importType>
+		<importTypeDescription>The project example requires the m2eclipse-core, m2eclipse-wtp and JBoss Maven Project Examples feature.</importTypeDescription> 
+	</project>
+	
+	<project>
+		<category>Weld 1.1.0 for JBoss Application Server 6.0</category>
+		<name>weld-jsf-l<projects>
+	
+	<project>
+		<category>Weld 1.0.1 for JBoss Application Server 6.0</category>
+		<name>weld-jsf-login</name>
+		<included-projects>weld-jsf-login</included-projects>
+		<shortDescription>Weld JSF login example</shortDescription>
+		<description>
+The example demonstrates user login/logout for an application that uses JSF.
+It will create the weld-jsf-login project in your workspace.
+		</description>
+		<size>8192</size>
+		<url>http://anonsvn.jboss.org/repos/jbosstools/workspace/snjeza/weld-examples/weld-jsf-login-1.0.1.zip</url>
+		<fixes>
+			<fix type="wtpruntime">
+				<property name="allowed-types">org.jboss.ide.eclipse.as.runtime.60</property>
+				<property name="description">This project example requires JBoss Application Server 6.0</property>
+			</fix>
+		</fixes>
+		<importType>maven</importType>
+		<importTypeDescription>The project example requires the m2eclipse-core, m2eclipse-wtp and JBoss Maven Project Examples feature.</importTypeDescription> 
+	</project>
+	
+	<project>
+		<category>Weld 1.1.0 for JBoss Application Server 6.0</category>
+		<name>weld-jsf-l
