@@ -306,6 +306,94 @@ Dynamic registration is not supported in XAResource for the following reasons:
 Transaction Recovery
 ^^^^^^^^^^^^^^^^^^^^
 
+1. Failure recovery
++++++++++++++++++++
+
+* During recovery, the Transaction Manager needs the ability to communicate to all resource managers that are in use by the applications in the system. For each resource manager, the Transaction Manager uses the XAResource.recover method to retrieve the list of transactions currently in a
+*prepared* or *heuristically completed* state. Typically, the system administrator configures all transactional resource factories that are used by the applications deployed on the system. The JDBC XADataSource object, for example, is a factory for the JDBC XAConnection objects.
+
+* Because XAResource objects are not persistent across system failures, the Transaction Manager needs the ability to acquire the XAResource objects that represent the resource managers which might have participated in the transactions prior to a system failure. For example, a Transaction Manager might use the JNDI look-up mechanism to acquire a connection from each of the transactional resource factories, and then obtain the corresponding *XAResource* object for each connection. The Transaction Manager then invokes the XAResource.recover method to ask each resource manager to return the transactions that are currently in a *prepared* or *heuristically completed* state.
+
+NOTE: When running XA recovery, you must tell JBoss Transaction Service which types of Xid it can recover. Each Xid that JBoss Transaction Service creates has a unique node identifier encoded within it, and JBoss Transaction Service only recovers transactions and states that match the requested node identifier. The node identifier to use should be provided to JBoss Transaction Service in a property that starts with the name com.arjuna.ats.jta.xaRecoveryNode. Multiple values are allowed. A value of * forces recovery, and possibly rollback, of all transactions, regardless of their node identifier. Use it with caution.
+
+* If the JBossJTA JDBC 2.0 driver is in use, JBossJTA manages all XAResource crash recovery automatically. Otherwise one, of the following recovery mechanisms is used:
+** If the *XAResource* is able to be serialized, then the serialized form will be saved during transaction commitment, and used during recovery. The recreated *XAResource* is assumed to be valid and able to drive recovery on the associated database.
+** The com.arjuna.ats.jta.recovery.XAResourceRecovery, com.arjuna.ats.jta.recovery.XARecoveryResourceManager and com.arjuna.ats.jta.recovery.XARecoveryResource interfaces are used. Refer to the JDBC chapters on failure recovery for more information.
+
+
+2. Recovering XAConnections
++++++++++++++++++++++++++++
+
+* When recovering from failures, JBossJTA requires the ability to reconnect to databases that were in use prior to the failures, in order to resolve outstanding transactions. Most connection information is saved by the transaction service during its normal execution, and can be used during recovery to recreate the connection. However, it is possible that some of the information is lost during the failure, if the failure occurs while it is being written. In order to recreate those connections, you must provide one implementations of the JBossJTA interface com.arjuna.ats.jta.recovery.XAResourceRecovery for each database that may be used by an application.
+
+NOTE: If you are using the transactional JDBC 2.0 driver provided with JBossJTA, no additional work is necessary in order to ensure that recovery occurs.
+
+* To inform the recovery system about each of the *XAResourceRecovery* instances, specify their class names through properties. Any property found in the *properties* file, or registered at run-time, starting with the name com.arjuna.ats.jta.recovery.XAResourceRecovery is recognized as representing one of these instances. Its value is the class name, such as: *com.arjuna.ats.jta.recovery.XAResourceRecoveryOracle=com.foo.barRecovery*
+
+* Additional information to be passed to the instance at creation can be specified after a semicolon: *com.arjuna.ats.jta.recovery.XAResourceRecoveryOracle=com.foo.barRecovery;myData=hello*
+
+NOTE: These properties should be in the JTA section of the property file.
+
+* Any errors will be reported during recovery.
+----
+public interface XAResourceRecovery
+{
+public XAResource getXAResource () throws SQLException;
+public boolean initialise (String p);
+public boolean hasMoreResources ();
+};
+----
+
+Each method should return the following information:
+
+* initialize
+** After the instance is created, any additional information found after the first semicolon in the property value definition is passed to the object. The object can use this information in an implementation-specific manner.
+
+* hasMoreResources
+** Each XAResourceRecovery implementation can provide multiple XAResource instances. Before calling to getXAResource, hasMoreResources is called to determine whether any further connections need to be obtained. If the return value is false, getXAResource is not called called again during this recovery sweep and the instance is ignored until the next recovery scan.
+
+* getXAResource
+** Returns an instance of the XAResource object. How this is created (and how the parameters to its constructors are obtained) is up to the XAResourceRecovery implementation. The parameters to the constructors of this class should be similar to those used when creating the initial driver or data source, and should be sufficient to create new XAResources instances that can be used to drive recovery.
+
+NOTE: If you want your XAResourceRecovery instance to be called during each sweep of the recovery manager, ensure that once hasMoreResources returns false to indicate the end of work for the current scan, it then returns true for the next recovery scan.
+
+3. Alternative to XAResourceRecovery
+++++++++++++++++++++++++++++++++++++
+
+* The iterator-based approach that XAResourceRecovery uses needs to be implemented with the ability to manage states. This leads to unnecessary complexity. In JBoss Transaction Service, you can provide an implementation of the public interface, as below:
+----
+com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper
+{
+public boolean initialise(String p) throws Exception;
+public XAResource[] getXAResources() throws Exception;
+}
+----
+
+* During each recovery sweep, the getXAResources method is called, and attempts recovery on each element of the array. For the majority of resource managers, you only need one XAResource in the array, since the recover method can return multiple Xids.
+
+* Unlike instances of XAResourceRecovery instances, which are configured via the XML properties file and instantiated by JBoss Transaction Service, instances of XAResourceRecoveryHelper are constructed by the application code and registered with JBoss Transaction Service by calling XARecoveryModule.addXAResourceRecoveryHelper.
+
+* The initialize method is not currently called by JBoss Transaction Service, but is provided to allow for the addition of further configuration options in later releases.
+
+* You can deregister XAResourceRecoveryHelper instances, after which they will no longer be called by the recovery manager. Deregistration may block for a while, if a recovery scan is in progress.
+
+* The ability to dynamically add and remove instances of XAResourceRecoveryHelper while the system is running is beneficial for environments where datasources may be deployed or undeployed, such as application servers. Be careful when classloading behavior in these cases.
+
+
+JDBC and Transactions
+^^^^^^^^^^^^^^^^^^^^^
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
