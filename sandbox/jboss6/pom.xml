@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.kylin.jta</groupId>
-  <artifactId>jta</artifactId>
+  <artifactId>jta-jboss6</artifactId>
   <version>1.0</version>
 
 <repositories>
