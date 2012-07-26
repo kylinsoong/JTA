@@ -1,4 +1,4 @@
-package com.kylin.jboss.jta;
+package com.kylin.jta.jboss5;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

@@ -1,4 +1,4 @@
-package com.kylin.jboss.jta.ejb;
+package com.kylin.jta.jboss5.ejb;
 
 public interface JTATestService {
 

@@ -1,8 +1,9 @@
-package com.kylin.jboss.jta;
+package com.kylin.jta.jboss5;
 
 import javax.naming.InitialContext;
 
-import com.kylin.jboss.jta.ejb.JTATestService;
+import com.kylin.jta.jboss5.ejb.JTATestService;
+
 
 public class EJBClient {
 

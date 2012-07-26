@@ -1,4 +1,4 @@
-package com.kylin.jboss.jta.ejb;
+package com.kylin.jta.jboss5.ejb;
 
 import javax.ejb.Remote;
 import javax.ejb.Stateless;

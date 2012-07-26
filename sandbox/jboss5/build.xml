@@ -1,8 +1,8 @@
 <?xml version="1.0"?>  
   
-<project name="jboss" default="deploy" basedir="..">  
+<project name="jtaTest" basedir=".">  
   
-	<property name="app.dir" value="${basedir}/jboss" />  
+	<property name="app.dir" value="${basedir}" />  
 	<property name="src.dir" value="${app.dir}/src" />
 	<property name="conf.dir" value="${app.dir}/conf" /> 
 	<property name="web.dir" value="${app.dir}/web" />
@@ -66,7 +66,7 @@
 		
 		<jar jarfile="${build.dir}/demo.jta-${version}.jar">  
 	    	<fileset dir="${build.classes.dir}">  
-	        	<include name="com/kylin/jboss/jta/ejb/*.class" /> 
+	        	<include name="com/kylin/jta/jboss5/ejb/*.class" /> 
 	    	</fileset> 
 		</jar>
 
@@ -80,69 +80,6 @@
 		<delete file="${jboss.server}/demo.jta-${version}.jar" />
 	</target>
 	
-	
-	<!-- End -->
-	
-	
-	<target name="war" depends="jar" description="generate all wars"> 
-		
-		<copy todir="${build.dir}/demo.war-${version}" >  
-			<fileset dir="${web.dir}" includes="**"/>  
-		</copy>
-		
-		<copy file="${build.dir}/demo.servlet-${version}.jar" todir="${build.dir}/demo.war-${version}/WEB-INF/lib"/>
-		
-		<war destfile="${build.dir}/demo-${version}.war" webxml="${build.dir}/demo.war-${version}/WEB-INF/web.xml">
-			<fileset dir="${build.dir}/demo.war-${version}"/>
-		</war>
-	</target>
-	
-	<target name="ear" depends="war" description="generate all ears">
-		
-		<copy todir="${build.dir}/demo.ear-${version}" >  
-			<fileset dir="${build.dir}" includes="demo-${version}.war"/>
-			<fileset dir="${conf.dir}/demo.ear" includes="**"/>
-		</copy>
-		
-		<delete file="${build.dir}/demo.ear-${version}/META-INF/application.xml" />	
-		
-		<ear destfile="${build.dir}/demo-${version}.ear" appxml="${conf.dir}/demo.ear/META-INF/application.xml">
-			<fileset dir="${build.dir}/demo.ear-${version}"/>
-		</ear>
-		
-	</target>	
-	
-	
 
-	
-	<target name="deployWar" depends="war">  
-			<copy file="${build.dir}/demo-${version}.war" todir="${jboss.server}"/>
-						
-	</target> 
-	<target name="unDeployWar" >  
-		<delete file="${jboss.server}/demo-${version}.war" />
-	</target>
-	
-	<target name="deploy" depends="ear">  
-		<copy file="${build.dir}/demo-${version}.ear" todir="${jboss.server}"/>		
-	</target> 
-	
-	<target name="unDeploy" >  
-		<delete file="${jboss.server}/demo-${version}.ear" />
-	</target>
-	
-	<target name="deployCluster" depends="ear">  
-		<copy file="${build.dir}/demo-${version}.ear" todir="${cluster.node1.server}"/>	
-		<copy file="${conf.dir}/jboss-log4j.xml" todir="${cluster.node1.server}/../conf"/>
-		
-		<copy file="${build.dir}/demo-${version}.ear" todir="${cluster.node2.server}"/>	
-		<copy file="${conf.dir}/jboss-log4j.xml" todir="${cluster.node2.server}/../conf"/>
-			
-	</target> 
-		
-	<target name="unDeployCluster" >  
-		<delete file="${cluster.node1.server}/demo-${version}.ear" />
-		<delete file="${cluster.node2.server}/demo-${version}.ear" />
-	</target>
   
 </project>    
